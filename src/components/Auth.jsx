@@ -9,9 +9,32 @@ const Auth = () => {
   const [registerPassword, setRegisterPassword] = useState('');
   const [role, setRole] = useState('student');
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    console.log("se connecter avec :", { loginEmail, loginPassword });
+    console.log("Attempting login with:", { loginEmail, loginPassword });
+
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ loginEmail, loginPassword }),
+        });
+
+        const data = await response.json();
+        console.log("Server login response:", data);
+        
+        alert(data.message);
+
+        if (data.success) {
+            // Ici on pourra rediriger l'utilisateur vers son tableau de bord plus tard
+            console.log("Utilisateur connecté :", data.user);
+        }
+
+    } catch (error) {
+        console.error("Login connection error:", error);
+    }
   };
 
   const handleRegister = async (e) => {
