@@ -169,6 +169,7 @@ const AdminEvenements = () => {
                 {pendingEvents.length === 0 ? (
                     <div style={{ background: "#fef3c7", borderRadius: "12px", padding: "40px", textAlign: "center" }}>
                         <p style={{ color: "#92400e" }}>🎉 Aucun événement en attente de validation</p>
+                        <p style={{ fontSize: "13px", marginTop: "8px" }}>Ajoutez des événements avec status 'pending' pour tester</p>
                     </div>
                 ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>

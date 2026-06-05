@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -8,12 +7,10 @@ const AdminUtilisateurs = () => {
     const [message, setMessage] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [newUser, setNewUser] = useState({
-        nom: "",
-        prenom: "",
+        username: "",
         email: "",
         password: "",
-        role: "STUDENT",
-        telephone: ""
+        role: "student"
     });
     const token = localStorage.getItem("token");
 
@@ -42,7 +39,7 @@ const AdminUtilisateurs = () => {
             });
             setMessage({ type: "success", text: "✅ Utilisateur ajouté avec succès!" });
             setShowAddForm(false);
-            setNewUser({ nom: "", prenom: "", email: "", password: "", role: "STUDENT", telephone: "" });
+            setNewUser({ username: "", email: "", password: "", role: "student" });
             fetchUsers();
             setTimeout(() => setMessage(null), 3000);
         } catch (error) {
@@ -111,15 +108,13 @@ const AdminUtilisateurs = () => {
                 <div style={{ background: "white", borderRadius: "12px", padding: "24px", marginBottom: "24px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
                     <h3 style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "16px" }}>📝 Nouvel utilisateur</h3>
                     <form onSubmit={handleAddUser} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                        <input type="text" placeholder="Nom" value={newUser.nom} onChange={(e) => setNewUser({...newUser, nom: e.target.value})} required style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px" }} />
-                        <input type="text" placeholder="Prénom" value={newUser.prenom} onChange={(e) => setNewUser({...newUser, prenom: e.target.value})} required style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px" }} />
+                        <input type="text" placeholder="Nom d'utilisateur" value={newUser.username} onChange={(e) => setNewUser({...newUser, username: e.target.value})} required style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px" }} />
                         <input type="email" placeholder="Email" value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})} required style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px" }} />
                         <input type="password" placeholder="Mot de passe" value={newUser.password} onChange={(e) => setNewUser({...newUser, password: e.target.value})} required style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px" }} />
-                        <input type="tel" placeholder="Téléphone" value={newUser.telephone} onChange={(e) => setNewUser({...newUser, telephone: e.target.value})} style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px" }} />
                         <select value={newUser.role} onChange={(e) => setNewUser({...newUser, role: e.target.value})} style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "8px" }}>
-                            <option value="STUDENT">Étudiant</option>
-                            <option value="ORGANIZER">Organisateur</option>
-                            <option value="ADMIN">Administrateur</option>
+                            <option value="student">🎓 Étudiant</option>
+                            <option value="organizer">📋 Organisateur</option>
+                            <option value="admin">👑 Administrateur</option>
                         </select>
                         <button type="submit" style={{ background: "#2563eb", color: "white", padding: "10px", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "bold" }}>✅ Créer</button>
                         <button type="button" onClick={() => setShowAddForm(false)} style={{ background: "#6b7280", color: "white", padding: "10px", borderRadius: "8px", border: "none", cursor: "pointer" }}>Annuler</button>
