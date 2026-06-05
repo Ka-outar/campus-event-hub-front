@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const Auth = () => {
+const Auth = ({ onLoginSuccess }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -28,8 +28,11 @@ const Auth = () => {
         alert(data.message);
 
         if (data.success) {
-            // Ici on pourra rediriger l'utilisateur vers son tableau de bord plus tard
-            console.log("Utilisateur connecté :", data.user);
+            // Sauvegarde des données utilisateur dans le localStorage
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Notification au composant App.jsx du succès de la connexion
+            onLoginSuccess();
         }
 
     } catch (error) {
@@ -40,11 +43,10 @@ const Auth = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // On remplace l'arabe par de l'anglais propre pour les logs
     console.log("Attempting user registration with:", { username, registerEmail, registerPassword, role });
 
     const userData = {
-        fullName: username,       
+        fullName: username,      
         email: registerEmail,     
         password: registerPassword, 
         role: role
@@ -67,8 +69,7 @@ const Auth = () => {
     } catch (error) {
         console.error("Connection error:", error);
     }
-};
-
+  };
 
   return (
     <div style={styles.container}>
@@ -230,7 +231,6 @@ const styles = {
     fontSize: '13px',
     color: '#777',
     marginTop: '5px',
-    removeAttribute: 'margin-bottom',
     marginBottom: '20px'
   },
   input: {
@@ -259,7 +259,7 @@ const styles = {
   button: {
     borderRadius: '25px',
     border: 'none',
-    backgroundColor: '#0056b3', // الأزرق الملكي
+    backgroundColor: '#0056b3', // Bleu ENSET
     color: '#ffffff',
     fontSize: '13px',
     fontWeight: 'bold',
@@ -282,7 +282,7 @@ const styles = {
     zIndex: 100
   },
   overlay: {
-    background: 'linear-gradient(135deg, #0056b3, #003d82)', // تدرج أزرق ENSET
+    background: 'linear-gradient(135deg, #0056b3, #003d82)', // Gradient bleu ENSET
     color: '#ffffff',
     position: 'relative',
     left: '-100%',
