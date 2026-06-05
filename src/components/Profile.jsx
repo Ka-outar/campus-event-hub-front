@@ -32,7 +32,6 @@ const Profile = ({ onLogout }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // حماية: تأكدي باللي الصورة ماشي كبر من 5MB مثلاً لتفادي ثقل المتصفح
       if (file.size > 5 * 1024 * 1024) {
         alert("La taille de l'image est trop grande (Max 5MB)");
         return;
@@ -44,7 +43,6 @@ const Profile = ({ onLogout }) => {
         setProfileImage(base64String);
         localStorage.setItem(`profile_img_${user.email}`, base64String);
 
-        // تحديث الكائن ف الـ localStorage باش تبقا الصورة باينة حتا فاش ديري ريفريش
         const currentUserData = JSON.parse(localStorage.getItem('user')) || {};
         currentUserData.profile_image = base64String;
         localStorage.setItem('user', JSON.stringify(currentUserData));
@@ -57,10 +55,10 @@ const Profile = ({ onLogout }) => {
     fileInputRef.current.click();
   };
 
-  // دالة حفظ التغييرات وإرسالها للسيرفر (تم حذف حقل الصورة من الإرسال)
+  // دالة حفظ التغييرات وإرسالها للسيرفر
   const handleSaveChanges = async (e) => {
     e.preventDefault();
-    setLoading(true); // تفعيل حالة التحميل
+    setLoading(true);
     
     const userId = user?.id || user?._id || JSON.parse(localStorage.getItem('user'))?.id;
 
@@ -87,7 +85,6 @@ const Profile = ({ onLogout }) => {
       const data = await response.json();
 
       if (data.success || response.ok) {
-        // 1. تحديث الكائن الجديد للـ User (مع الاحتفاظ بالصورة محلياً)
         const updatedUser = { 
           ...user, 
           id: userId, 
@@ -96,12 +93,8 @@ const Profile = ({ onLogout }) => {
           profile_image: profileImage
         };
         
-        // 2. تحديث الـ LocalStorage
         localStorage.setItem('user', JSON.stringify(updatedUser));
-        
-        // 3. تحديث الـ State الرئيسي
         setUser(updatedUser);
-        
         setIsEditing(false);
         setPassword('');
         alert("Profil mis à jour avec succès !");
@@ -111,8 +104,6 @@ const Profile = ({ onLogout }) => {
 
     } catch (error) {
       console.error("Erreur Backend:", error);
-      
-      // حل احتياطي في حالة انقطاع السيرفر
       const updatedUser = { ...user, username, email, profile_image: profileImage };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -131,7 +122,10 @@ const Profile = ({ onLogout }) => {
         
         {/* Header */}
         <div style={{ ...styles.cardHeader, backgroundColor: avatarColor }}>
-          <span style={styles.userRole}>{user.role ? user.role.toUpperCase() : 'STUDENT'}</span>
+          {/* 🎯 هنا رجع يقرا الـ role الحقيقي والكامل كيفما جا من الداتابيز */}
+          <span style={styles.userRole}>
+            {user.role ? user.role.toUpperCase() : 'USER'}
+          </span>
         </div>
         
         {/* Dynamic Photo de profil Option */}
@@ -276,17 +270,18 @@ const Profile = ({ onLogout }) => {
   );
 };
 
+// 🛠️ هنا فين قادينا الـ الستيلات باش تجي الكارت فالوسط نيشان ومتبقاش هاربة لجنب
 const styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    width: '100vw',
+    justifyContent: 'center', // 🎯 كايجيب الكارت فالوسط عمودياً
+    alignItems: 'center',     // 🎯 كايجيب الكارت فالوسط أفقياً
+    minHeight: '85vh',        // كايضمن ياخد المساحة المناسبة للشاشة
+    width: '100%',            // كايخليه ياخد العرض كامل المتاح وسط الـ Sidebar
     backgroundColor: '#f8fafc',
     margin: 0,
-    padding: 0,
+    padding: '20px',
     boxSizing: 'border-box',
     fontFamily: '"Segoe UI", Roboto, sans-serif'
   },
@@ -295,7 +290,7 @@ const styles = {
     borderRadius: '20px',
     boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
     width: '400px',
-    maxWidth: '92%',
+    maxWidth: '100%',
     overflow: 'hidden',
     border: '1px solid #e2e8f0'
   },
@@ -312,10 +307,11 @@ const styles = {
     fontSize: '11px',
     fontWeight: '700',
     color: '#ffffff',
-    background: 'rgba(255, 255, 255, 0.2)',
+    background: 'rgba(255, 255, 255, 0.3)',
     padding: '4px 12px',
     borderRadius: '100px',
-    height: 'fit-content'
+    height: 'fit-content',
+    textTransform: 'uppercase'
   },
   avatarContainer: {
     display: 'flex',
