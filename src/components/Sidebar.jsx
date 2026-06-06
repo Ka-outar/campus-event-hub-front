@@ -1,36 +1,14 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
   const location = useLocation();
 
-  // جلب الدور مباشرة عند أول Render بلا ما نحتاجو useEffect
-  const [role] = useState(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    return user && user.role ? user.role.toLowerCase() : 'student';
-  });
-
-  const menuItems = {
-    student: [
-      { path: '/profile', label: 'Mon Profil', icon: '👤' },
-      { path: '/events', label: 'Catalogue Événements', icon: '📅' },
-      { path: '/my-registrations', label: 'Mes Inscriptions', icon: '🎟️' },
-    ],
-    organizer: [
-      { path: '/profile', label: 'Mon Profil', icon: '👤' },
-      { path: '/events', label: 'Catalogue Événements', icon: '📅' },
-      { path: '/manage-events', label: 'Gérer mes Événements', icon: '🛠️' },
-      { path: '/create-event', label: 'Créer un Événement', icon: '➕' },
-    ],
-    admin: [
-      { path: '/profile', label: 'Mon Profil', icon: '👤' },
-      { path: '/events', label: 'Catalogue Événements', icon: '📅' },
-      { path: '/admin/dashboard', label: 'Dashboard Admin', icon: '📊' },
-      { path: '/admin/users', label: 'Gestion Utilisateurs', icon: '👥' },
-    ]
-  };
-
-  const currentMenu = menuItems[role] || menuItems['student'];
+  // القائمة مخصصة فقط وحصرياً للطالب حسب المهام المحددة ديالك
+  const menuItems = [
+    { path: '/profile', label: 'Mon Profil', icon: '👤' },
+    { path: '/events', label: 'Catalogue Événements', icon: '📅' },
+    { path: '/my-registrations', label: 'Mes Inscriptions', icon: '🎟️' },
+  ];
 
   return (
     <div style={styles.sidebar}>
@@ -38,7 +16,7 @@ const Sidebar = () => {
         <h3 style={styles.logoText}>Campus Event Hub</h3>
       </div>
       <nav style={styles.nav}>
-        {currentMenu.map((item) => {
+        {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link 

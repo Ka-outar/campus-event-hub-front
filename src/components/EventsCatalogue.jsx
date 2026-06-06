@@ -1,136 +1,109 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const EventsCatalogue = () => {
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('Tous');
-  const [loading, setLoading] = useState(true);
-
-  const user = JSON.parse(localStorage.getItem('user'));
-
-  const categories = ['Tous', 'Conférence', 'Atelier', 'Sport', 'Culture', 'Formation'];
+  const [category, setCategory] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/events?search=${search}&category=${category}`);
-        const data = await response.json();
-        setEvents(data);
-      } catch (error) {
-        console.error("Erreur fetching events:", error);
-      } finally {
-        setLoading(false);
+    fetch('http://localhost:5000/api/events')
+      .then(res => res.json())
+      .then(data => setEvents(data))
+      .catch(err => console.error(err));
+  }, []);
+
+  const filteredEvents = events.filter(event => 
+    event.title.toLowerCase().includes(search.toLowerCase()) &&
+    (category === '' || event.category === category)
+  );
+
+  // 🎨 دالة ذكية كتحسب كود فريد لكل حدث وتعطيه صورة مختلفة أوتوماتيكياً بلا ما تسوق للـ Category
+  const getFallbackImage = (title, id) => {
+    const imagesPool = [
+      'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=500&auto=format&fit=crop', // ورشة عمل كمبيوتر
+      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop', // مؤتمر وجمهور
+      'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=500&auto=format&fit=crop', // عمل جماعي وتواصل
+      'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=500&auto=format&fit=crop', // عرض وتقديم على خشبة
+      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&auto=format&fit=crop', // طلاب في الجامعة
+      'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=500&auto=format&fit=crop', // حرم جامعي
+      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop', // مايكروفون وإضاءة حدث
+      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&auto=format&fit=crop', // برمجة ولاب توب
+      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&auto=format&fit=crop', // مناقشة وابتكار
+      'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=500&auto=format&fit=crop'  // عرض تقني تفاعلي
+    ];
+
+    // حساب رقم فريد بناءً على الـ ID وحروف العنوان
+    let score = id ? parseInt(id, 10) : 0;
+    if (title) {
+      for (let i = 0; i < title.length; i++) {
+        score += title.charCodeAt(i); // تحويل كل حرف فالعنوان لرقم وجمعه
       }
-    };
-
-    fetchEvents();
-  }, [search, category]); // user n'est pas utilisé dans fetchEvents donc pas besoin
-
-  const handleRegister = async (eventId) => {
-    if (!user || !user.id) {
-      alert("Veuillez vous reconnecter.");
-      return;
     }
 
-    try {
-      const response = await fetch('http://localhost:5000/api/registrations/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, event_id: eventId })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Erreur lors de l'inscription");
-      } else {
-        alert(data.message || "Inscrit avec succès !");
-        const refreshResponse = await fetch(`http://localhost:5000/api/events?search=${search}&category=${category}`);
-        const refreshData = await refreshResponse.json();
-        setEvents(refreshData);
-      }
-    } catch (error) {
-      console.error("Erreur d'inscription:", error);
-    }
+    // اختيار الصورة المناسبة باستعمال باقي القسمة على طول المصفوفة
+    return imagesPool[score % imagesPool.length];
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>📅 Catalogue des Événements</h2>
+    <div style={{ fontFamily: 'sans-serif' }}>
+      <h2>📅 Catalogue des Événements</h2>
       
-      <div style={styles.filterSection}>
+      {/* الفلاتر والبحث */}
+      <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
         <input 
           type="text" 
           placeholder="Rechercher un événement..." 
-          value={search}
+          value={search} 
           onChange={(e) => setSearch(e.target.value)}
-          style={styles.searchInput}
+          style={{ padding: '10px', width: '300px', borderRadius: '6px', border: '1px solid #ccc' }}
         />
-        
-        <select value={category} onChange={(e) => setCategory(e.target.value)} style={styles.selectInput}>
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
+        <select 
+          value={category} 
+          onChange={(e) => setCategory(e.target.value)}
+          style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+        >
+          <option value="">Toutes les catégories</option>
+          <option value="Conférence">Conférence</option>
+          <option value="Atelier">Atelier</option>
+          <option value="Sport">Sport</option>
+          <option value="Culture">Culture</option>
         </select>
       </div>
 
-      {loading ? (
-        <div style={styles.loading}>Chargement des événements...</div>
-      ) : events.length === 0 ? (
-        <div style={styles.noEvents}>Aucun événement trouvé.</div>
-      ) : (
-        <div style={styles.grid}>
-          {events.map((event) => (
-            <div key={event.id} style={styles.card}>
-              <div style={styles.cardHeader}>
-                <span style={styles.badge}>{event.category}</span>
-                <span style={styles.places}>{event.available_seats} places restantes</span>
-              </div>
-              <h3 style={styles.eventTitle}>{event.title}</h3>
-              <p style={styles.eventDescription}>{event.description?.substring(0, 120)}...</p>
-              <p style={styles.locationInfo}>📍 {event.location}</p>
-              <div style={styles.cardFooter}>
-                <span style={styles.date}>📆 {new Date(event.date_event).toLocaleDateString()}</span>
-                <button 
-                  onClick={() => handleRegister(event.id)}
-                  disabled={event.available_seats <= 0}
-                  style={{
-                    ...styles.btnRegister,
-                    backgroundColor: event.available_seats <= 0 ? '#cbd5e1' : '#0056b3',
-                    cursor: event.available_seats <= 0 ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {event.available_seats <= 0 ? 'Complet' : "S'inscrire"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* شبكة الأحداث */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+        {filteredEvents.map(event => (
+          <div key={event.id} style={{ background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+            
+            {/* 📸 الـ تاق السحري: كيمرر العنوان والـ id دابا */}
+            <img 
+              src={event.image_url && event.image_url.trim() !== "" && !event.image_url.includes('undefined') ? event.image_url : getFallbackImage(event.title, event.id)} 
+              alt={event.title} 
+              onError={(e) => {
+                e.target.onerror = null; 
+                e.target.src = getFallbackImage(event.title, event.id);
+              }}
+              style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
+            />
+
+            <h3 style={{ margin: '10px 0 5px 0' }}>{event.title}</h3>
+            <p style={{ color: '#777', fontSize: '14px' }}>📍 {event.location}</p>
+            <p style={{ fontWeight: 'bold', color: event.available_seats > 0 ? '#059669' : '#dc2626' }}>
+              {event.available_seats} places restantes
+            </p>
+            <button 
+              onClick={() => navigate(`/events/${event.id}`)}
+              style={{ width: '100%', padding: '10px', background: '#0056b3', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginTop: '10px' }}
+            >
+              Voir Détails
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
-};
-
-const styles = {
-  container: { fontFamily: '"Segoe UI", Roboto, sans-serif', padding: '20px', maxWidth: '1200px', margin: '0 auto' },
-  title: { color: '#1e293b', marginBottom: '24px', fontWeight: '700' },
-  filterSection: { display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap' },
-  searchInput: { flex: 1, minWidth: '250px', padding: '12px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' },
-  selectInput: { padding: '12px 16px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', backgroundColor: '#ffffff', outline: 'none' },
-  loading: { textAlign: 'center', fontSize: '16px', color: '#64748b', marginTop: '40px' },
-  noEvents: { textAlign: 'center', fontSize: '16px', color: '#64748b', marginTop: '40px' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' },
-  card: { backgroundColor: '#ffffff', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
-  cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' },
-  badge: { backgroundColor: '#e6f0fa', color: '#0056b3', fontSize: '12px', fontWeight: '700', padding: '4px 10px', borderRadius: '6px' },
-  places: { fontSize: '12px', color: '#059669', fontWeight: '600' },
-  eventTitle: { fontSize: '18px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' },
-  eventDescription: { fontSize: '14px', color: '#475569', margin: '0 0 10px 0', lineHeight: '1.5' },
-  locationInfo: { fontSize: '13px', color: '#64748b', fontWeight: '500', marginBottom: '15px' },
-  cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '12px' },
-  date: { fontSize: '12px', color: '#64748b', fontWeight: '500' },
-  btnRegister: { color: '#ffffff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', transition: 'background-color 0.2s' }
 };
 
 export default EventsCatalogue;

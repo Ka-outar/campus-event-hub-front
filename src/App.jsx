@@ -6,7 +6,7 @@ import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import EventsCatalogue from './components/EventsCatalogue';
 import MyRegistrations from './components/MyRegistrations';
-
+import EventDetails from './components/EventDetails';
 
 function App() {
   // Vérifier si un utilisateur est déjà enregistré dans le localStorage du navigateur
@@ -30,7 +30,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Si l'utilisateur n'est pas connecté, il va sur /auth (qui affiche le composant Auth) */}
+        {/* Si l'utilisateur n'est pas connecté, il va sur /auth */}
         <Route 
           path="/auth" 
           element={!user ? <Auth onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/profile" />} 
@@ -52,14 +52,18 @@ function App() {
                   {/* Zone dynamique où les pages vont s'afficher */}
                   <div style={{ padding: '30px', boxSizing: 'border-box' }}>
                     <Routes>
-                      {/* Tâche 4 : Page de profil par défaut */}
+                      {/* Page de profil par défaut */}
                       <Route path="/profile" element={<Profile onLogout={handleLogout} />} />
                       
+                      {/* Catalogue des événements */}
                       <Route path="/events" element={<EventsCatalogue />} />
-                      {/* Espaces réservés pour les prochaines étapes (Tâches 5, 6, 7) */}
-                      <Route path="/events" element={<div><h2>Catalogue des événements (Tâche 5 - En cours)</h2></div>} />
-                      <Route path="/my-registrations" element={<div><h2>Mes Inscriptions (Tâche 7 - En cours)</h2></div>} />
+                      
+                      {/* Vrai composant des inscriptions réelles (sans doublon) */}
                       <Route path="/my-registrations" element={<MyRegistrations />} />
+                      
+                      {/* Détails d'un événement */}
+                      <Route path="/events/:id" element={<EventDetails />} />
+                      
                       {/* Redirection automatique si la route n'existe pas */}
                       <Route path="*" element={<Navigate to="/profile" />} />
                     </Routes>
